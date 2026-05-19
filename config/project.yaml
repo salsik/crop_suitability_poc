@@ -1,0 +1,29 @@
+project:
+  name: Syria Crop Suitability PoC
+  corridor_name: Homs-Damascus corridor
+  default_year: 2025
+  default_input_csv: data/raw/syria_crop_features_2025.csv
+  default_output_csv: data/processed/crop_suitability_predictions.csv
+  model_dir: models
+  dashboard_default_crop: olive
+
+training:
+  model_type: random_forest_regressor
+  test_size: 0.25
+  random_state: 42
+  n_estimators: 250
+  min_samples_leaf: 4
+  max_depth: null
+  exclude_worldcover_labels:
+    - 50 # built-up
+    - 80 # permanent water
+    - 90 # herbaceous wetland
+    - 95 # mangroves
+    - 100 # moss and lichen
+
+suitability_classes:
+  very_low: [0, 35]
+  low: [35, 50]
+  moderate: [50, 65]
+  high: [65, 80]
+  priority: [80, 100]

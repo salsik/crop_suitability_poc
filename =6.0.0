@@ -1,0 +1,8 @@
+Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com
+Collecting pyyaml
+  Obtaining dependency information for pyyaml from https://files.pythonhosted.org/packages/76/b2/2b69cee94c9eb215216fc05778675c393e3aa541131dc910df8e52c83776/PyYAML-6.0.3-cp38-cp38-win_amd64.whl.metadata
+  Downloading PyYAML-6.0.3-cp38-cp38-win_amd64.whl.metadata (2.2 kB)
+Downloading PyYAML-6.0.3-cp38-cp38-win_amd64.whl (160 kB)
+   ---------------------------------------- 160.1/160.1 kB 2.4 MB/s eta 0:00:00
+Installing collected packages: pyyaml
+Successfully installed pyyaml-6.0.3

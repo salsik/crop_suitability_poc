@@ -1,0 +1,51 @@
+# Crop profiles for first-screening suitability scoring.
+# These values are conservative PoC placeholders and must be calibrated locally.
+# Units:
+# - temperature: Celsius
+# - rainfall: mm/year
+# - slope: degrees
+# - soil_org_carbon: proxy scale from OpenLandMap or local data; calibrate before final use.
+
+olive:
+  display_name: Olive
+  product: Olive oil
+  sun_requirement: Full sun
+  shade_tolerance: Low to moderate
+  agrivoltaics_note: Avoid excessive shade; use wider solar row spacing or higher panel elevation.
+  weights:
+    soil: 0.30
+    moisture: 0.20
+    heat: 0.20
+    vegetation: 0.15
+    terrain: 0.10
+    land_use: 0.05
+  thresholds:
+    ph: [6.0, 6.5, 8.0, 8.8]
+    soil_org_carbon: [8, 25]
+    ndmi: [-0.25, -0.10, 0.25, 0.45]
+    mean_temp_c: [12, 18, 30, 38]
+    annual_rain_mm: [250, 350, 700, 950]
+    ndvi: [0.12, 0.22, 0.55, 0.80]
+    slope_deg_max: 18
+
+damask_rose:
+  display_name: Damask Rose
+  product: Rose oil / rose water / dried petals
+  sun_requirement: Full sun to light partial shade
+  shade_tolerance: Moderate, but yield/oil quality must be validated
+  agrivoltaics_note: Good candidate for solar-sharing trials with partial shade and water-saving design.
+  weights:
+    soil: 0.30
+    moisture: 0.25
+    heat: 0.20
+    vegetation: 0.10
+    terrain: 0.10
+    land_use: 0.05
+  thresholds:
+    ph: [6.0, 6.5, 7.5, 8.2]
+    soil_org_carbon: [10, 30]
+    ndmi: [-0.15, 0.00, 0.35, 0.55]
+    mean_temp_c: [10, 16, 28, 35]
+    annual_rain_mm: [300, 450, 900, 1200]
+    ndvi: [0.18, 0.30, 0.65, 0.85]
+    slope_deg_max: 12
