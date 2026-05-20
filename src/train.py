@@ -94,6 +94,31 @@ def main() -> None:
     required_cols = feature_config["required_base_columns"]
     feature_cols = feature_config["model_feature_columns"]
 
+    # Prevent spatial leakage: never allow coordinates as model inputs.
+    forbidden_model_cols = {
+        "longitude",
+        "latitude",
+        "lon",
+        "lat",
+        "x",
+        "y",
+        ".geo",
+        "geometry",
+        "system:index",
+    }
+
+    leaked_cols = sorted(set(feature_cols).intersection(forbidden_model_cols))
+
+    if leaked_cols:
+        raise ValueError(
+            f"Spatial leakage risk: remove these columns from model_feature_columns: {leaked_cols}"
+        )
+    
+    print("Model feature columns:")
+    for c in feature_cols:
+        print(f"  - {c}")
+
+
     validate_columns(df, required_cols)
     numeric_cols = sorted(set(required_cols + feature_cols + ["worldcover_label", "eligible_land"]))
     numeric_cols = [c for c in numeric_cols if c in df.columns]

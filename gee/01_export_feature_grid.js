@@ -14,6 +14,8 @@ var aoi = ee.Geometry.Polygon([
   [[36.05, 33.25], [36.95, 33.25], [37.05, 34.85], [36.15, 34.85], [36.05, 33.25]]
 ], null, false);
 
+//var corridor_aoi = ee.Geometry.Rectangle([36.25, 33.45, 37.30, 34.80]);
+
 var START_DATE = '2025-01-01';
 var END_DATE = '2025-12-31';
 var EXPORT_SCALE = 100; // 100m recommended for first CSV export. 10m over 3500 km2 is too large.
@@ -81,7 +83,7 @@ var s2Composite = s2.median().clip(aoi);
 // 3. Soil, terrain, and climate proxy layers
 // -----------------------------------------------------------------------------
 // OpenLandMap pH is often stored as pH x 10.
-var soilPh = ee.Image('OpenLandMap/SOL/SOL_PH-H2O_USDA-4C1A2A2A_M/v02')
+var soilPh = ee.Image('OpenLandMap/SOL/SOL_PH-H2O_USDA-4C1A2A_M/v02')
   .select('b0').divide(10).rename('soil_ph').clip(aoi);
 
 // Organic carbon proxy. Calibrate units before final use.
@@ -149,7 +151,7 @@ var sampledWithLatLon = sampled.map(function(f) {
   });
 });
 
-print('Feature sample preview', sampledWithLatLon.limit(5));
+//print('Feature sample preview', sampledWithLatLon.limit(5));
 
 Export.table.toDrive({
   collection: sampledWithLatLon,

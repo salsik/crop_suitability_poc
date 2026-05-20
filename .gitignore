@@ -1,7 +1,9 @@
 
 # Ignore everything in data
 data/*
+models/*
 
+notebooks/models
 # Except the exports folder
 !data/exports/
 
