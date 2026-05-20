@@ -1,0 +1,9 @@
+
+# Ignore everything in data
+data/*
+
+# Except the exports folder
+!data/exports/
+
+# And keep everything inside exports
+!data/exports/**
