@@ -1,9 +1,0 @@
-{
-  "crop": "olive",
-  "target": "olive_rule_score",
-  "n_rows": 37871,
-  "n_train": 28403,
-  "n_test": 9468,
-  "mae": 0.3408912006072466,
-  "r2": 0.995127214939651
-}
