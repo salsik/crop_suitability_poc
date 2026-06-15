@@ -19,7 +19,7 @@ from utils import class_label, score_to_rgb
 
 st.set_page_config(page_title="Japan Crop Suitability PoC", layout="wide")
 
-DEFAULT_DATA = ROOT / "data" / "processed" / "jp_crop_suitability_predictions.csv"
+DEFAULT_DATA = ROOT / "data" / "exports" / "jp_crop_suitability_predictions.csv"
 MODEL_DIR = ROOT / "models"
 
 CROP_GRADIENTS = {
