@@ -1,28 +1,23 @@
 // 01_export_feature_grid.js
 // Google Earth Engine script for data collection.
-// Exports Sentinel-2 + soil/climate/terrain feature points for the Homs-Damascus corridor.
-// Save exported CSV to: data/raw/syria_crop_features_2025.csv
+// Exports Sentinel-2 + soil/climate/terrain feature points for Iizuka, Sosa, Chiba, Japan.
+// Save exported CSV to: data/raw/sosa_crop_features_2025.csv
 
 // -----------------------------------------------------------------------------
 // 1. AOI
 // -----------------------------------------------------------------------------
-// Recommended: upload exact corridor polygon as an Earth Engine asset and use it here.
-// var aoi = ee.FeatureCollection('users/YOUR_USERNAME/homs_damascus_corridor').geometry();
-
-// Fallback rough corridor polygon. Replace with exact project boundary.
+// Bounding box for Iizuka district, Sosa City, Chiba Prefecture, Japan.
 var aoi = ee.Geometry.Polygon([
-  [[36.05, 33.25], [36.95, 33.25], [37.05, 34.85], [36.15, 34.85], [36.05, 33.25]]
+  [[140.535, 35.718], [140.569, 35.718], [140.569, 35.746], [140.535, 35.746], [140.535, 35.718]]
 ], null, false);
-
-//var corridor_aoi = ee.Geometry.Rectangle([36.25, 33.45, 37.30, 34.80]);
 
 var START_DATE = '2025-01-01';
 var END_DATE = '2025-12-31';
-var EXPORT_SCALE = 100; // 100m recommended for first CSV export. 10m over 3500 km2 is too large.
-var MAX_POINTS = 80000; // approximate max points for first PoC. Increase carefully.
-var EXPORT_FOLDER = 'syria_crop_suitability_poc';
+var EXPORT_SCALE = 10; // 10m Sentinel-2 native resolution (highly detailed for small village scale)
+var MAX_POINTS = 50000; // sample density for the 10 km2 area
+var EXPORT_FOLDER = 'japan_crop_suitability_poc';
 
-Map.centerObject(aoi, 8);
+Map.centerObject(aoi, 14);
 Map.addLayer(aoi, {color: 'white'}, 'AOI', false);
 
 // -----------------------------------------------------------------------------
@@ -155,8 +150,8 @@ var sampledWithLatLon = sampled.map(function(f) {
 
 Export.table.toDrive({
   collection: sampledWithLatLon,
-  description: 'syria_crop_features_2025',
+  description: 'sosa_crop_features_2025',
   folder: EXPORT_FOLDER,
-  fileNamePrefix: 'syria_crop_features_2025',
+  fileNamePrefix: 'sosa_crop_features_2025',
   fileFormat: 'CSV'
 });

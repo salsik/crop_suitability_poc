@@ -1,11 +1,11 @@
 project:
-  name: Syria Crop Suitability PoC
-  corridor_name: Homs-Damascus corridor
+  name: Japan Crop Suitability PoC (Sosa Iizuka)
+  corridor_name: Iizuka, Sosa, Chiba
   default_year: 2025
-  default_input_csv: data/raw/syria_crop_features_2025.csv
+  default_input_csv: data/raw/sosa_crop_features_2025.csv
   default_output_csv: data/processed/crop_suitability_predictions.csv
   model_dir: models
-  dashboard_default_crop: olive
+  dashboard_default_crop: soybean
 
 training:
   model_type: random_forest_regressor

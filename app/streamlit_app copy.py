@@ -17,29 +17,10 @@ sys.path.append(str(ROOT / "src"))
 from crop_profiles import load_crop_profiles
 from utils import class_label, score_to_rgb
 
-st.set_page_config(page_title="Japan Crop Suitability PoC", layout="wide")
+st.set_page_config(page_title="Syria Crop Suitability PoC", layout="wide")
 
-DEFAULT_DATA = ROOT / "data" / "processed" / "jp_crop_suitability_predictions.csv"
+DEFAULT_DATA = ROOT / "data" / "processed" / "crop_suitability_predictions.csv"
 MODEL_DIR = ROOT / "models"
-
-CROP_GRADIENTS = {
-    "lemon": {
-        "start": [255, 253, 210],  # Very pale yellow
-        "end": [245, 190, 0]      # Bright golden yellow
-    },
-    "apple": {
-        "start": [255, 230, 230],  # Very pale red/pink
-        "end": [230, 30, 30]       # Deep crimson red
-    },
-    "olive": {
-        "start": [230, 248, 230],  # Very pale green
-        "end": [34, 139, 34]       # Rich forest green
-    },
-    "soybean": {
-        "start": [255, 240, 220],  # Very pale orange/amber
-        "end": [200, 100, 10]      # Rich amber/orange-brown
-    }
-}
 
 
 @st.cache_data
@@ -183,43 +164,11 @@ def render_score_legend() -> None:
     )
 
 
-def render_crop_legend(selected_crop_keys: list[str], profiles: dict) -> None:
-    st.markdown("**Map crop legend**")
-
-    for crop_key in selected_crop_keys:
-        gradient = CROP_GRADIENTS.get(crop_key, {"start": [240, 240, 240], "end": [120, 120, 120]})
-        start = gradient["start"]
-        end = gradient["end"]
-        name = crop_display_name(crop_key, profiles)
-
-        st.markdown(
-            f"""
-            <div style="display:flex;align-items:center;gap:0.75rem;margin:0.35rem 0;">
-                <span style="
-                    width:50px;
-                    height:16px;
-                    border-radius:3px;
-                    background: linear-gradient(90deg, rgb({start[0]},{start[1]},{start[2]}) 0%, rgb({end[0]},{end[1]},{end[2]}) 100%);
-                    border:1px solid rgba(0,0,0,0.3);
-                    display:inline-block;
-                "></span>
-                <span><b>{name}</b> <span style="color:#666;font-size:0.85rem;">(pale = low suitability, saturated = high)</span></span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    st.caption(
-        "Colors represent the crop type. Point color saturation indicates the suitability score (vibrant = high suitability)."
-    )
-
-
 def prepare_selected_crop_view(
     df: pd.DataFrame,
     selected_crop_keys: list[str],
     profiles: dict,
     score_cols: dict[str, str],
-    color_by: str = "Suitability Score",
 ) -> tuple[pd.DataFrame, str]:
     """
     Adds the map score/crop columns.
@@ -243,7 +192,6 @@ def prepare_selected_crop_view(
         out["map_score_display"] = out["map_score"].round(1)
         out["map_crop"] = crop_display_name(crop_key, profiles)
         out["map_mode"] = f"{crop_display_name(crop_key, profiles)} score"
-        out["map_crop_key"] = crop_key
 
     else:
         selected_score_cols = [score_cols[k] for k in selected_crop_keys]
@@ -260,54 +208,9 @@ def prepare_selected_crop_view(
             lambda k: crop_display_name(k, profiles)
         )
         out["map_mode"] = "Best selected crop"
-        out["map_crop_key"] = out["best_selected_crop_key"]
 
-    if color_by == "Crop Type":
-        def row_to_crop_color(row):
-            crop_key = row["map_crop_key"]
-            score = row["map_score"]
-            if pd.isnull(score):
-                return [160, 160, 160, 200]
-
-            # Linear interpolation for the color gradient of this crop
-            gradient = CROP_GRADIENTS.get(crop_key, {
-                "start": [240, 240, 240],
-                "end": [120, 120, 120]
-            })
-            start = gradient["start"]
-            end = gradient["end"]
-
-            t = np.clip(float(score) / 100.0, 0.0, 1.0)
-            r = int(start[0] + (end[0] - start[0]) * t)
-            g = int(start[1] + (end[1] - start[1]) * t)
-            b = int(start[2] + (end[2] - start[2]) * t)
-
-            return [r, g, b, 230] # high constant opacity so it shows clearly on satellite background!
-
-        out["color"] = out.apply(row_to_crop_color, axis=1)
-    else:
-        out = add_color_column(out, "map_score")
-
+    out = add_color_column(out, "map_score")
     return out, "map_score"
-
-def get_rivers_geojson() -> dict | None:
-    """Load rivers GeoJSON from Natural Earth data via URL."""
-    try:
-        import urllib.request
-        url = "https://naciscdn.org/naturalearth/10m/physical/ne_10m_rivers_lake_centerlines.zip"
-        
-        # Alternative: Try to use a simpler approach with a direct GeoJSON URL
-        # Natural Earth provides rivers as GeoJSON
-        rivers_url = "https://naciscdn.org/naturalearth/10m/physical/ne_10m_rivers_lake_centerlines.geojson"
-        
-        with urllib.request.urlopen(rivers_url, timeout=10) as response:
-            import json as json_module
-            rivers_data = json_module.loads(response.read())
-            return rivers_data
-    except Exception as e:
-        st.warning(f"Could not load rivers data: {e}")
-        return None
-
 
 
 def render_map(
@@ -315,8 +218,7 @@ def render_map(
     selected_crop_keys: list[str],
     profiles: dict,
     score_cols: dict[str, str],
-    radius: int = 10,
-    map_background: str = "Satellite Map",
+    radius: int = 120,
 ) -> None:
     required_cols = ["longitude", "latitude", "map_score", "map_crop", "color"]
     map_df = df.dropna(subset=required_cols).copy()
@@ -335,35 +237,8 @@ def render_map(
         get_fill_color="color",
         get_radius=radius,
         pickable=True,
-        opacity=0.85,
+        opacity=0.65,
     )
-
-    layers = []
-    if map_background == "Satellite Map":
-        satellite_layer = pdk.Layer(
-            "TileLayer",
-            data="https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-            pickable=False,
-        )
-        layers.append(satellite_layer)
-
-    layers.append(layer)
-
-    if map_background != "Satellite Map":
-        rivers_data = get_rivers_geojson()
-        if rivers_data:
-            rivers_layer = pdk.Layer(
-                "GeoJsonLayer",
-                rivers_data,
-                stroked=False,
-                filled=False,
-                extruded=False,
-                wireframe=True,
-                get_line_color=[0, 100, 200],
-                get_line_width=2,
-                pickable=False,
-            )
-            layers.append(rivers_layer)
 
     crop_score_lines = ""
     for crop_key in selected_crop_keys:
@@ -382,24 +257,15 @@ def render_map(
         "style": {"backgroundColor": "steelblue", "color": "white"},
     }
 
-    style_map = {
-        "Satellite Map": None,
-        "Road Map (Light)": "light",
-        "Road Map (Dark)": "dark",
-    }
-    selected_style = style_map.get(map_background, None)
-    map_provider = None if map_background == "Satellite Map" else "carto"
-
     deck = pdk.Deck(
-        map_style=selected_style,
-        map_provider=map_provider,
+        map_style=None,
         initial_view_state=pdk.ViewState(
             latitude=mid_lat,
             longitude=mid_lon,
-            zoom=14,
+            zoom=8,
             pitch=0,
         ),
-        layers=layers,
+        layers=[layer],
         tooltip=tooltip,
     )
 
@@ -426,9 +292,9 @@ def show_feature_importance(crop_key: str) -> None:
     st.plotly_chart(fig, use_container_width=True)
 
 
-st.title("Japan Crop Suitability PoC (Sosa Iizuka)")
+st.title("Syria Crop Suitability PoC")
 st.caption(
-    "Screen 1: Lemon, Apple, Olive, and Soybean suitability heatmaps in Iizuka (Sosa, Chiba) from satellite, soil, climate, and terrain features."
+    "Screen 1: Olive and Damask rose suitability heatmaps from satellite, soil, climate, and terrain features."
 )
 
 profiles = load_profiles()
@@ -456,7 +322,7 @@ with st.sidebar:
     selected_crop_keys = st.multiselect(
         "Crop",
         crop_keys,
-        default=[crop_keys[0],crop_keys[1],crop_keys[2],crop_keys[3]] if crop_keys else [],
+        default=[crop_keys[0]] if crop_keys else [],
         format_func=lambda k: crop_display_name(k, profiles),
         help=(
             "Select one crop to show that crop's suitability, or multiple crops "
@@ -466,19 +332,7 @@ with st.sidebar:
 
     use_model = st.toggle("Use trained model score", value=True)
     min_score = st.slider("Minimum score", 0, 100, 0)
-    radius = st.slider("Point radius", 3, 100, 10, step=1)
-
-    color_by = st.selectbox(
-        "Color points by",
-        ["Crop Type","Suitability Score"],
-        help="Suitability Score uses a green/red heat scale. Crop Type uses a distinct color per crop.",
-    )
-
-    map_background = st.selectbox(
-        "Map style",
-        ["Satellite Map", "Road Map (Light)", "Road Map (Dark)"],
-        help="Choose between real satellite imagery or road maps.",
-    )
+    radius = st.slider("Point radius", 30, 400, 120, step=10)
 
 if not selected_crop_keys:
     st.warning("Select at least one crop in Map settings.")
@@ -500,7 +354,6 @@ prepared, map_score_col = prepare_selected_crop_view(
     selected_crop_keys=selected_crop_keys,
     profiles=profiles,
     score_cols=score_cols,
-    color_by=color_by,
 )
 
 filtered = prepared[prepared[map_score_col] >= min_score].copy()
@@ -533,10 +386,7 @@ else:
         "The tooltip shows each selected crop's individual score."
     )
 
-if color_by == "Crop Type":
-    render_crop_legend(selected_crop_keys, profiles)
-else:
-    render_score_legend()
+render_score_legend()
 
 c1, c2, c3, c4 = st.columns(4)
 
@@ -554,7 +404,6 @@ render_map(
     profiles=profiles,
     score_cols=score_cols,
     radius=radius,
-    map_background=map_background,
 )
 
 left, right = st.columns([1, 1])
