@@ -9,3 +9,7 @@ notebooks/models
 
 # And keep everything inside exports
 !data/exports/**
+
+
+gee/*
+
